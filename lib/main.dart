@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 int taskNum = 0;
 var wardList = [];
 
@@ -70,17 +73,20 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         crossAxisCount: 2,
         childAspectRatio: 2 / 3,
         children: List.generate(taskNum, (idx) {
-          return Card(
+          return Card(elevation: 10.0,
+            color: Colors.tealAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20.0))
+            ),
               child: Container(
                   alignment: Alignment.topCenter,
                   width: 100,
                   height: 100,
-                  color: Colors.white,
                   child: Column(
                     children: [
                       SizedBox(
                         width: 150,
-                        height: 100,
+                        height: 60,
                         child: TextField(
                           controller: new TextEditingController(),
                           textInputAction: TextInputAction.newline,
@@ -89,12 +95,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           onChanged: (text) {
                             wardList[idx] = text;
                             print(text);
-                            //setState(() {});
-                          },
-                          onEditingComplete: () {
-                            setState(() {});
                           },
                           decoration: new InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                            ),
                             suffix: IconButton(
                                 icon: Icon(Icons.add),
                                 onPressed: () {
@@ -105,6 +110,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                       ),
                       Text(
                         '${wardList[idx]}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                        ),
                       ),
                     ],
                   )));
@@ -122,4 +131,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       ),
     );
   }
+}
+
+class Dog {
+  final int id;
+  final String message;
+
+  Dog({required this.id, required this.message});
 }
