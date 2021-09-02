@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
+import 'package:memoneday/task.dart';
+import 'package:memoneday/DB.dart';
 
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+
 int taskNum = 0;
 var wardList = [];
 
-void main() => runApp(const MyApp());
+void main() async{
+  runApp(const MyApp());
+}
 
 /// This is the main application widget.
 class MyApp extends StatelessWidget {
@@ -92,9 +94,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           textInputAction: TextInputAction.newline,
                           keyboardType: TextInputType.multiline,
                           textAlign: TextAlign.start,
-                          onChanged: (text) {
-                            wardList[idx] = text;
-                            print(text);
+                          onChanged: (text) async{
+                            var task = Task(
+                              id: idx,
+                              task: text,
+                            );
+                            await TaskDB.insertData(task);
+                            // wardList[idx] = text;
+                            // print(text);
                           },
                           decoration: new InputDecoration(
                             border: OutlineInputBorder(
@@ -102,8 +109,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                             ),
                             suffix: IconButton(
                                 icon: Icon(Icons.add),
-                                onPressed: () {
-                                  setState(() {});
+                                onPressed: () async{
+                                  print(await TaskDB.showAllData());
+                                  // setState(() {});
                                 }),
                           ),
                         ),
@@ -133,9 +141,3 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 }
 
-class Dog {
-  final int id;
-  final String message;
-
-  Dog({required this.id, required this.message});
-}
