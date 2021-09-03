@@ -53,6 +53,19 @@ class TaskDB {
     });
   }
 
+  static Future<String> getonedata(int index) async {
+    final Database? db = await getDatabaseConnect();
+    final List<Map<String, dynamic>> maps = await db!.query("TASKS");
+
+      return maps[index]["name"];
+  }
+
+  static Future<int> getCount() async {
+    var db = await getDatabaseConnect();
+    final List<Map<String, dynamic>> maps = await db!.query("TASKS");
+    return maps.length;
+  }
+
   // Insert
   static Future<void> insertData(Task task) async {
     final Database? db = await getDatabaseConnect();
@@ -84,8 +97,4 @@ class TaskDB {
     );
   }
 
-  static Future getCount() async {
-    var dbClient = await getDatabaseConnect();
-    return Sqflite.firstIntValue(await dbClient!.rawQuery('SELECT COUNT(*) FROM TASKS'));
-  }
 }

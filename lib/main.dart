@@ -66,7 +66,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
+
     return Scaffold(
       appBar: AppBar(
         title: Text('備忘錄'),
@@ -110,8 +111,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                             suffix: IconButton(
                                 icon: Icon(Icons.add),
                                 onPressed: () async{
-                                  print(await TaskDB.showAllData());
-                                  // setState(() {});
+                                  print(await TaskDB.getonedata(idx));
+                                  print(await TaskDB.getCount());
+                                  setState(() {});
                                 }),
                           ),
                         ),
