@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:memoneday/task.dart';
 import 'package:memoneday/DB.dart';
 
-
 int taskNum = 0;
 var wardList = [];
 
-void main() async{
+void main() {
   runApp(const MyApp());
 }
 
@@ -56,9 +55,19 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   @override
   void initState() {
     super.initState();
+    setState(() {
+      _asyncMethod();
+    });
 
     // Start listening to changes.
     myController.addListener(_printLatestValue);
+  }
+
+  _asyncMethod() async {
+    taskNum = await TaskDB.getCount();
+    for (int i = 0; i < taskNum; i++) {
+      wardList.add(await TaskDB.getonedata(i));
+    }
   }
 
   void _printLatestValue() {
@@ -66,8 +75,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   @override
-  Widget build(BuildContext context){
-
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('備忘錄'),
@@ -76,11 +84,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         crossAxisCount: 2,
         childAspectRatio: 2 / 3,
         children: List.generate(taskNum, (idx) {
-          return Card(elevation: 10.0,
-            color: Colors.tealAccent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20.0))
-            ),
+          return Card(
+              elevation: 10.0,
+              color: Colors.tealAccent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
               child: Container(
                   alignment: Alignment.topCenter,
                   width: 100,
@@ -95,7 +103,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           textInputAction: TextInputAction.newline,
                           keyboardType: TextInputType.multiline,
                           textAlign: TextAlign.start,
-                          onChanged: (text) async{
+                          onChanged: (text) async {
                             var task = Task(
                               id: idx,
                               task: text,
@@ -106,13 +114,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           },
                           decoration: new InputDecoration(
                             border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
+                              borderRadius: BorderRadius.circular(5),
                             ),
                             suffix: IconButton(
                                 icon: Icon(Icons.add),
-                                onPressed: () async{
+                                onPressed: () async {
                                   print(await TaskDB.getonedata(idx));
                                   print(await TaskDB.getCount());
+                                  wardList[idx] = await TaskDB.getonedata(idx);
                                   setState(() {});
                                 }),
                           ),
@@ -125,6 +134,15 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           fontSize: 40,
                         ),
                       ),
+                      Expanded(
+                          child: Container(
+                            alignment: Alignment.bottomRight,
+                            child:IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () {},
+                            ),
+                          ),
+                        ),
                     ],
                   )));
         }),
@@ -142,4 +160,3 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 }
-

@@ -60,9 +60,9 @@ class TaskDB {
       return maps[index]["name"];
   }
 
-  static Future<int> getCount() async {
-    var db = await getDatabaseConnect();
-    final List<Map<String, dynamic>> maps = await db!.query("TASKS");
+  static Future<int> getCount()  async{
+    var db =  await getDatabaseConnect();
+    final List<Map<String, dynamic>> maps =  await db!.query("TASKS");
     return maps.length;
   }
 
