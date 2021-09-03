@@ -139,7 +139,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                             alignment: Alignment.bottomRight,
                             child:IconButton(
                               icon: Icon(Icons.delete),
-                              onPressed: () {},
+                              onPressed: () async{
+                                await TaskDB.deleteData(idx);
+                                taskNum -= 1;
+                                wardList.removeAt(idx);
+                                print(wardList);
+                                print(TaskDB);
+                                setState(() {});
+                              },
                             ),
                           ),
                         ),
