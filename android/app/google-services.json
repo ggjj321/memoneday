@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "473902456679",
+    "project_id": "eloquent-hour-323902",
+    "storage_bucket": "eloquent-hour-323902.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:473902456679:android:c4895ef0ca0633c96759c2",
+        "android_client_info": {
+          "package_name": "com.example.firebasepratice"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "473902456679-cbsoajuc2v0r0hcok1d9v9vr1av8f8mn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEhwjD3id3cf-bWg44DrEU3tOgiVOK6Y0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "473902456679-cbsoajuc2v0r0hcok1d9v9vr1av8f8mn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:473902456679:android:b717711684424dd76759c2",
+        "android_client_info": {
+          "package_name": "com.example.memoneday"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "473902456679-cbsoajuc2v0r0hcok1d9v9vr1av8f8mn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEhwjD3id3cf-bWg44DrEU3tOgiVOK6Y0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "473902456679-cbsoajuc2v0r0hcok1d9v9vr1av8f8mn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,11 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:memoneday/task.dart';
 import 'package:memoneday/DB.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'high_importance_channel', // id
+    'High Importance Notifications', // title
+    'This channel is used for important notifications.', // description
+    importance: Importance.high,
+    playSound: true);
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('A bg message just showed up :  ${message.messageId}');
+}
 
 int taskNum = 0;
 var wardList = [];
 
-void main() {
+Future<void> main() async {
+  tz.initializeTimeZones();
+  var now = DateTime.now();
+  print(now);
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
   runApp(const MyApp());
 }
 
@@ -43,6 +80,21 @@ class MyStatefulWidget extends StatefulWidget {
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   final myController = TextEditingController();
+  int _counter = 0;
+  String? _selectedTime;
+  late List<String> _selectedlist;
+
+  Future<void> _showtime() async {
+    final TimeOfDay? result =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    if (result != null) {
+      setState(() {
+        _selectedTime = result.format(context);
+        _selectedlist = _selectedTime!.split(" ");
+        _selectedlist = _selectedlist[0].split(":");
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -58,9 +110,88 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     setState(() {
       _asyncMethod();
     });
-
     // Start listening to changes.
     myController.addListener(_printLatestValue);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+            notification.hashCode, //id
+            notification.title, // title
+            notification.body, // body
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                channel.description,
+                color: Colors.blue,
+                playSound: true,
+                icon: '@mipmap/ic_launcher',
+              ),
+            ));
+      }
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('A new onMessageOpenedApp event was published!');
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+      if (notification != null && android != null) {
+        showDialog(
+            context: context,
+            builder: (_) {
+              return AlertDialog(
+                title: Text(notification.title as String),
+                content: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [Text(notification.body as String)],
+                  ),
+                ),
+              );
+            });
+      }
+    });
+  }
+
+  void showNotification(messasage) {
+    DateTime now = DateTime.now();
+    int hour = now.hour, minute = now.minute;
+    int selechour = int.parse(_selectedlist[0]) + 12,
+        seleminute = int.parse(_selectedlist[1]);
+
+    if (minute > seleminute) {
+      seleminute += 60;
+      selechour -= 1;
+    }
+
+    minute = seleminute - minute;
+
+    if (hour > selechour)
+      hour = 24 - (hour - selechour);
+    else
+      hour = selechour - hour;
+
+    setState(() {
+      _counter++;
+    });
+    flutterLocalNotificationsPlugin.zonedSchedule(
+        0,
+        "記得喔",
+        messasage,
+        tz.TZDateTime.now(tz.local).add(Duration(hours: hour, minutes: minute)),
+        NotificationDetails(
+            android: AndroidNotificationDetails(
+                channel.id, channel.name, channel.description,
+                importance: Importance.high,
+                color: Colors.blue,
+                playSound: true,
+                icon: '@mipmap/ic_launcher')),
+        androidAllowWhileIdle: true,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime);
+    //print(tz.TZDateTime.now(tz.local));
+    //Navigator.pop(context);
   }
 
   _asyncMethod() async {
@@ -85,73 +216,92 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         childAspectRatio: 2 / 3,
         children: List.generate(taskNum, (idx) {
           return Card(
-              elevation: 10.0,
-              color: Colors.tealAccent,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20.0))),
-              child: Container(
-                  alignment: Alignment.topCenter,
-                  width: 100,
-                  height: 100,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        width: 150,
-                        height: 60,
-                        child: TextField(
-                          controller: new TextEditingController(),
-                          textInputAction: TextInputAction.newline,
-                          keyboardType: TextInputType.multiline,
-                          textAlign: TextAlign.start,
-                          onChanged: (text) async {
-                            var task = Task(
-                              id: idx,
-                              task: text,
-                            );
-                            await TaskDB.insertData(task);
-                            // wardList[idx] = text;
-                            // print(text);
-                          },
-                          decoration: new InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            suffix: IconButton(
-                                icon: Icon(Icons.add),
-                                onPressed: () async {
-                                  print(await TaskDB.getonedata(idx));
-                                  print(await TaskDB.getCount());
-                                  wardList[idx] = await TaskDB.getonedata(idx);
-                                  setState(() {});
-                                }),
+            elevation: 10.0,
+            color: Colors.tealAccent,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            child: Container(
+                alignment: Alignment.topCenter,
+                width: 100,
+                height: 100,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: 150,
+                      height: 60,
+                      child: TextField(
+                        controller: new TextEditingController(),
+                        textInputAction: TextInputAction.newline,
+                        keyboardType: TextInputType.multiline,
+                        textAlign: TextAlign.start,
+                        onChanged: (text) async {
+                          var task = Task(
+                            id: idx,
+                            task: text,
+                          );
+                          await TaskDB.insertData(task);
+                          // wardList[idx] = text;
+                          // print(text);
+                        },
+                        decoration: new InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
                           ),
+                          suffix: IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: () async {
+                                print(await TaskDB.getonedata(idx));
+                                print(await TaskDB.getCount());
+                                wardList[idx] = await TaskDB.getonedata(idx);
+                                setState(() {});
+                              }),
                         ),
                       ),
-                      Text(
-                        '${wardList[idx]}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 40,
-                        ),
+                    ),
+                    Text(
+                      '${wardList[idx]}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 40,
                       ),
-                      Expanded(
-                          child: Container(
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
                             alignment: Alignment.bottomRight,
-                            child:IconButton(
+                            child: IconButton(
                               icon: Icon(Icons.delete),
-                              onPressed: () async{
+                              onPressed: () async {
                                 await TaskDB.deleteData(idx);
                                 taskNum -= 1;
                                 wardList.removeAt(idx);
-                                print(wardList);
-                                print(TaskDB);
                                 setState(() {});
                               },
                             ),
                           ),
-                        ),
-                    ],
-                  )));
+                          Container(
+                            alignment: Alignment.bottomCenter,
+                            child: IconButton(
+                              icon: Icon(Icons.send),
+                              onPressed:(){
+                                showNotification(wardList[idx]);
+                              }
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.bottomLeft,
+                            child: IconButton(
+                              icon: Icon(Icons.lock_clock),
+                              onPressed: _showtime,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )),
+          );
         }),
       ),
       floatingActionButton: FloatingActionButton(
