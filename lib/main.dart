@@ -82,7 +82,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   final myController = TextEditingController();
   int _counter = 0;
   String? _selectedTime;
-  late List<String> _selectedlist;
+  late List<String> _selectedlist, _selectTimelist;
 
   Future<void> _showtime() async {
     final TimeOfDay? result =
@@ -91,7 +91,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       setState(() {
         _selectedTime = result.format(context);
         _selectedlist = _selectedTime!.split(" ");
-        _selectedlist = _selectedlist[0].split(":");
+        _selectTimelist = _selectedlist[0].split(":");
       });
     }
   }
@@ -155,10 +155,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   void showNotification(messasage) {
+    print(messasage);
     DateTime now = DateTime.now();
     int hour = now.hour, minute = now.minute;
-    int selechour = int.parse(_selectedlist[0]) + 12,
-        seleminute = int.parse(_selectedlist[1]);
+    int selechour = int.parse(_selectTimelist[0]),
+        seleminute = int.parse(_selectTimelist[1]);
+    if(_selectedlist[1] == 'PM' && selechour != 12) selechour+=12;
+    if(_selectedlist[1] == 'AM' && selechour == 12) selechour=0; //24-hour clock
 
     if (minute > seleminute) {
       seleminute += 60;
@@ -167,14 +170,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
     minute = seleminute - minute;
 
-    if (hour > selechour)
+    if (hour > selechour)// 隔天
       hour = 24 - (hour - selechour);
     else
       hour = selechour - hour;
+    print(hour);
+    print(minute);
 
-    setState(() {
-      _counter++;
-    });
     flutterLocalNotificationsPlugin.zonedSchedule(
         0,
         "記得喔",
