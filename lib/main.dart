@@ -154,8 +154,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     });
   }
 
-  void showNotification(messasage) {
+  void showNotification(messasage, idx) {
     print(messasage);
+    print(idx);
     DateTime now = DateTime.now();
     int hour = now.hour, minute = now.minute;
     int selechour = int.parse(_selectTimelist[0]),
@@ -178,7 +179,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     print(minute);
 
     flutterLocalNotificationsPlugin.zonedSchedule(
-        0,
+        idx,
         "記得喔",
         messasage,
         tz.TZDateTime.now(tz.local).add(Duration(hours: hour, minutes: minute)),
@@ -192,8 +193,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime);
-    //print(tz.TZDateTime.now(tz.local));
-    //Navigator.pop(context);
   }
 
   _asyncMethod() async {
@@ -252,8 +251,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           suffix: IconButton(
                               icon: Icon(Icons.add),
                               onPressed: () async {
-                                print(await TaskDB.getonedata(idx));
-                                print(await TaskDB.getCount());
+                                // print(await TaskDB.getonedata(idx));
+                                // print(await TaskDB.getCount());
                                 wardList[idx] = await TaskDB.getonedata(idx);
                                 setState(() {});
                               }),
@@ -287,7 +286,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                             child: IconButton(
                               icon: Icon(Icons.send),
                               onPressed:(){
-                                showNotification(wardList[idx]);
+                                showNotification(wardList[idx], idx);
                               }
                             ),
                           ),
